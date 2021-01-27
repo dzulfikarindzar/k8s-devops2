@@ -1,0 +1,97 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: good-healtcheck
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: probe-good
+  template:
+    metadata:
+      labels:
+        app: probe-good
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 3
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-healt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: livenes-bad
+  template:
+    metadata:
+      labels:
+        app: livenes-bad
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+        args:
+          - /bin/bash
+          - -c
+          - touch /tmp/healthy; sleep 15; rm -rf /tmp/healthy; sleep 600
+        livenessProbe:
+          exec:
+            command:
+              - cat
+              - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 3
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bad-healt
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: readiness-bad
+  template:
+    metadata:
+      labels:
+        app: readiness-bad
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+        args:
+          - /bin/bash
+          - -c
+          - sleep 20; touch /tmp/healthy; sleep 600
+        readinessProbe:
+          exec:
+            command:
+              - cat
+              - /tmp/healthy
+          initialDelaySeconds: 5
+          periodSeconds: 3
+---

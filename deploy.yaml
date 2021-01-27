@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-coba
+  template:
+    metadata:
+      labels:
+        app: nginx-coba
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    app: nginx-coba
+  type: ClusterIP
+  # type: LoadBalancer
+  # type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 80
+      NodePort: 30123
+      protocol: TCP
+      name: serviceport
+
+cluster ip
+container 80 > cluster 8080
+
+node port
+container > 80 > cluster k8s 8080 > 30123 instance port
+
+user 30123 > aws insctance > k8s 8080 > container 80
+
+user alb aws insctance > k8s 8080 > container 80
